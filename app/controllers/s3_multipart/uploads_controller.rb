@@ -3,7 +3,7 @@ module S3Multipart
 
     def create
       begin
-        upload = Upload.create(params)
+        upload = Upload.create(permitted_params)
         upload.execute_callback(:begin, session)
         response = upload.to_json
       rescue FileTypeError, FileSizeError => e
@@ -24,6 +24,10 @@ module S3Multipart
     end
 
     private
+
+      def permitted_params
+        params.permit!
+      end
 
       def sign_batch
         begin
