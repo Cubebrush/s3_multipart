@@ -75,7 +75,7 @@ module S3Multipart
 
 
       def airbrake(e, params)
-        Airbrake.notify_or_ignore(
+        Airbrake.notify(
           e,
           :parameters    => params,
           :session      => session
