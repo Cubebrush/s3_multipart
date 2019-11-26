@@ -1,7 +1,7 @@
 // Upload constructor
 function Upload(file, o, key) {
   function Upload() {
-    var upload, id, parts, part, segs, chunk_segs, chunk_lens, pipes, blob;
+    var upload, id, parts, part, segs, chunk_segs, chunk_lens, pipes, blob, num_segs;
     
     upload = this;
     

@@ -103,6 +103,7 @@ function S3MP(options) {
     },
 
     startProgressTimer: function() {
+      var part_available;
       var last_upload_chunk = [];
       var fn = function(key) {
         progress_timer[key] = global.setInterval(function() {
@@ -173,7 +174,7 @@ S3MP.prototype.initiateMultipart = function(upload, cb) {
 };
 
 S3MP.prototype.signPartRequest = function(id, object_name, upload_id, part, cb) {
-  var content_lengths, url, body, xhr;
+  var content_length, url, body, xhr;
 
   content_length = part.size;
   url = "/s3_multipart/uploads/"+id;
@@ -214,6 +215,7 @@ S3MP.prototype.completeMultipart = function(uploadObj, cb) {
 // the site server, and send the request.
 S3MP.prototype.deliverRequest = function(xhr, body, cb) {
   var self = this;
+  var response;
   
   xhr.onload = function() {
     response = JSON.parse(this.responseText);
@@ -346,7 +348,7 @@ S3MP.prototype.resume = function(key) {
 // Upload constructor
 function Upload(file, o, key) {
   function Upload() {
-    var upload, id, parts, part, segs, chunk_segs, chunk_lens, pipes, blob, chunkSize;
+    var upload, id, parts, part, segs, chunk_segs, chunk_lens, pipes, blob, chunkSize, num_segs;
     
     upload = this;
     chunkSize = 5242880;

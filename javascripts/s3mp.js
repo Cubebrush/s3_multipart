@@ -102,6 +102,7 @@ function S3MP(options) {
     },
 
     startProgressTimer: function() {
+      var part_available;
       var last_upload_chunk = [];
       var fn = function(key) {
         progress_timer[key] = global.setInterval(function() {
@@ -202,6 +203,7 @@ S3MP.prototype.completeMultipart = function(uploadObj, cb) {
 // the site server, and send the request.
 S3MP.prototype.deliverRequest = function(xhr, body, cb) {
   var self = this;
+  var response;
   
   xhr.onload = function() {
     response = JSON.parse(this.responseText);
