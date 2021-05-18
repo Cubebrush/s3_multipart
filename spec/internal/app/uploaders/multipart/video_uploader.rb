@@ -27,7 +27,7 @@ class VideoUploader < ApplicationController
     video = Video.create(name: "test")
     video.user = User.find(session[:user_id])
     upload.video = video
-    upload.update_attributes(location: "Unknown")
+    upload.update(location: "Unknown")
   end
 
   # See above comment. Called when the upload has successfully completed

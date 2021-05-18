@@ -58,7 +58,7 @@ module S3Multipart
           response = Upload.complete(params)
           upload = Upload.find_by_upload_id(params[:upload_id])
           if response.present?
-            upload.update_attributes(location: response[:location])
+            upload.update(location: response[:location])
           end  
           complete_response = upload.execute_callback(:complete, session)
           response ||= {}
