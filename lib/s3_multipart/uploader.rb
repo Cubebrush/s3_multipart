@@ -38,7 +38,7 @@ module S3Multipart
         self.model = model
 
         S3Multipart::Upload.class_eval do
-          has_one(model, options)
+          has_one(model, **options)
         end
       end
 

@@ -30,7 +30,7 @@ module S3Multipart
 
     def sign_part(options)
       url = "/#{options[:object_name]}?partNumber=#{options[:part_number]}&uploadId=#{options[:upload_id]}"
-      authorization, date = sign_request verb: 'PUT', url: URI.escape(url), content_length: options[:content_length]
+      authorization, date = sign_request verb: 'PUT', url: URI::DEFAULT_PARSER.escape(url), content_length: options[:content_length]
 
       { authorization: authorization, date: date }
     end
@@ -38,7 +38,7 @@ module S3Multipart
     def complete(options)
       options[:content_type] = "application/xml"
 
-      url = URI.escape("/#{options[:object_name]}?uploadId=#{options[:upload_id]}")
+      url = URI::DEFAULT_PARSER.escape("/#{options[:object_name]}?uploadId=#{options[:upload_id]}")
 
       body = format_part_list_in_xml(options)
       headers = { content_type: options[:content_type],
@@ -76,7 +76,7 @@ module S3Multipart
         end
       end
 
-      URI.escape(url)
+      URI::DEFAULT_PARSER.escape(url)
     end
 
     private
