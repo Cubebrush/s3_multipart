@@ -10,7 +10,7 @@ module S3Multipart
         response = {error: e.message}
       rescue => e
         logger.error "EXC: #{e.message}"
-        airbrake(e, params)
+        report_error(e, params)
         response = { error: t("s3_multipart.errors.create") }
       ensure
         render :json => response
@@ -34,7 +34,7 @@ module S3Multipart
           response = Upload.sign_batch(params)
         rescue => e
           logger.error "EXC: #{e.message}"
-          airbrake(e, params)
+          report_error(e, params)
           response = {error: t("s3_multipart.errors.update")}
         ensure
           render :json => response
@@ -46,7 +46,7 @@ module S3Multipart
           response = Upload.sign_part(params)
         rescue => e
           logger.error "EXC: #{e.message}"
-          airbrake(e, params)
+          report_error(e, params)
           response = {error: t("s3_multipart.errors.update")}
         ensure
           render :json => response
@@ -66,7 +66,7 @@ module S3Multipart
           complete_response
         rescue => e
           logger.error "EXC: #{e.message}"
-          airbrake(e, params)
+          report_error(e, params)
           response = {error: t("s3_multipart.errors.complete"), upload_id: params[:upload_id]}
         ensure
           render :json => response
@@ -74,12 +74,27 @@ module S3Multipart
       end
 
 
-      def airbrake(e, params)
-        Airbrake.notify(
-          e,
-          :parameters    => params,
-          :session      => session
-        )
+      # Was `Airbrake.notify`. The airbrake gem was removed from Cubebrush in the
+      # 2026-07 move to Better Stack, so this raised
+      # `NameError: uninitialized constant S3Multipart::UploadsController::Airbrake`
+      # *from inside all four rescues above* — masking the original exception and
+      # 500ing the request instead of rendering the {error: ...} JSON the uploader
+      # client expects. (Better Stack b631e221, 3 events from 2026-07-16.)
+      #
+      # Prefer the host application's reporter when it defines one, otherwise fall
+      # back to the Rails error reporter, so the gem carries no hard dependency on
+      # either. Both are no-ops rather than raisers when reporting is unconfigured.
+      #
+      # `session` is deliberately no longer sent: it can carry credentials, and
+      # modern reporters attach request/user context themselves.
+      def report_error(e, params)
+        context = {parameters: params.respond_to?(:to_unsafe_h) ? params.to_unsafe_h : params}
+
+        if defined?(::ErrorReporter)
+          ::ErrorReporter.notify(e, context)
+        elsif defined?(Rails) && Rails.respond_to?(:error)
+          Rails.error.report(e, handled: true, context: context)
+        end
       end
   end
 end
